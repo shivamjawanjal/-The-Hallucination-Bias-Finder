@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prompt Detective | Hallucination & Bias Finder (CoVe)</title>
+  <meta name="description" content="An advanced prompt engineering system using Chain-of-Verification (CoVe) and epistemic bias analysis to detect hallucinations and logical fallacies in text." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Navigation Bar -->
+    <header class="app-header">
+      <div class="header-brand">
+        <div class="brand-icon-wrapper">
+          <svg class="brand-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            <path d="M11 8v6M8 11h6" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <div class="brand-title">
+            <span class="gradient-text">PROMPT DETECTIVE</span>
+            <span class="version-tag">CoVe v2.5</span>
+          </div>
+          <p class="brand-subtitle">Chain-of-Verification & Epistemic Bias Auditor</p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="nav-tabs" role="tablist">
+        <button class="nav-tab active" id="tab-studio-btn" onclick="switchTab('studio')" role="tab" aria-selected="true">
+          <span class="tab-icon">🕵️</span>
+          <span>Detective Studio</span>
+        </button>
+        <button class="nav-tab" id="tab-chat-btn" onclick="switchTab('chat')" role="tab" aria-selected="false">
+          <span class="tab-icon">💬</span>
+          <span>Interrogate Bot</span>
+          <span class="chat-badge" id="chat-badge" style="display:none;">1</span>
+        </button>
+        <button class="nav-tab" id="tab-lab-btn" onclick="switchTab('lab')" role="tab" aria-selected="false">
+          <span class="tab-icon">🔬</span>
+          <span>Prompt Engineering Lab</span>
+        </button>
+        <button class="nav-tab" id="tab-viva-btn" onclick="switchTab('viva')" role="tab" aria-selected="false">
+          <span class="tab-icon">🎓</span>
+          <span>Viva Guide</span>
+        </button>
+      </nav>
+
+      <!-- Status & Settings -->
+      <div class="header-actions">
+        <div class="status-indicator" id="system-status-pill" title="Click to check engine status" onclick="openSettingsModal()">
+          <span class="status-dot online"></span>
+          <span class="status-label" id="status-label">Demo Simulation</span>
+        </div>
+        <button class="btn-icon" id="open-settings-btn" onclick="openSettingsModal()" title="API & Prompt Settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="app-main">
+      <!-- ================= TAB 1: STUDIO ================= -->
+      <section id="tab-studio" class="tab-content active">
+        <div class="studio-grid">
+          <!-- Left Column: Input and Controls -->
+          <div class="studio-card input-card">
+            <div class="card-header">
+              <div class="card-header-left">
+                <span class="card-badge">INPUT WORKBENCH</span>
+                <h2 class="card-title">Subject Text for Epistemic Audit</h2>
+              </div>
+              <div class="card-header-right">
+                <span class="char-count" id="char-count">0 words</span>
+              </div>
+            </div>
+
+            <!-- Presets Bar -->
+            <div class="presets-section">
+              <span class="presets-label">Academic Demonstration Presets:</span>
+              <div class="presets-chips" id="presets-chips">
+                <button class="preset-chip active-preset" onclick="loadPreset('historical_hallucination')" id="preset-hist-btn">
+                  🏛️ AI History Hallucination
+                </button>
+                <button class="preset-chip" onclick="loadPreset('pseudoscience_medical')" id="preset-med-btn">
+                  💊 Medical Misinformation
+                </button>
+                <button class="preset-chip" onclick="loadPreset('biased_tech_editorial')" id="preset-bias-btn">
+                  📢 Loaded Tech Editorial
+                </button>
+                <button class="preset-chip" onclick="loadPreset('factual_quantum_science')" id="preset-quant-btn">
+                  ⚛️ Quantum Physics (Factual)
+                </button>
+              </div>
+            </div>
+
+            <!-- Text Area -->
+            <div class="textarea-wrapper">
+              <textarea 
+                id="source-text-input" 
+                placeholder="Paste any article, AI-generated essay, news claim, or prompt output to decompose and audit..."
+                rows="9"
+              ></textarea>
+              <div class="textarea-actions">
+                <button class="btn-ghost" onclick="clearInput()" title="Clear text">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                  Clear
+                </button>
+                <button class="btn-ghost" onclick="pasteClipboard()" title="Paste from clipboard">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                  Paste
+                </button>
+              </div>
+            </div>
+
+            <!-- Audit Parameter Controls -->
+            <div class="controls-toolbar">
+              <div class="control-group">
+                <label for="rigor-select" class="control-label">CoVe Rigor Level:</label>
+                <select id="rigor-select" class="custom-select">
+                  <option value="deep" selected>Deep Atomic Deconstruction (Exhaustive)</option>
+                  <option value="balanced">Balanced Audit (Standard)</option>
+                  <option value="fast">Rapid Scan (Key Assertions)</option>
+                </select>
+              </div>
+
+              <div class="control-group">
+                <label for="framework-select" class="control-label">Prompting Architecture:</label>
+                <select id="framework-select" class="custom-select">
+                  <option value="cove" selected>Chain-of-Verification (CoVe)</option>
+                  <option value="react">Epistemic ReAct Verification</option>
+                  <option value="zero_shot">Direct Delimited Zero-Shot</option>
+                </select>
+              </div>
+
+              <button class="btn-primary" id="run-audit-btn" onclick="runEpistemicAudit()">
+                <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <span>Run Epistemic Verification</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Right Column: Audit Results & Dossier -->
+          <div class="studio-card results-card" id="results-container">
+            <!-- Empty state placeholder -->
+            <div class="empty-state" id="empty-state-view">
+              <div class="empty-icon-circle">
+                <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                  <path d="m9 12 2 2 4-4"></path>
+                </svg>
+              </div>
+              <h3 class="empty-title">Ready for Epistemic Audit</h3>
+              <p class="empty-desc">
+                Select one of the sample presets above or input your own text, then click <strong>"Run Epistemic Verification"</strong> to trigger the multi-stage Chain-of-Verification engine.
+              </p>
+              <div class="feature-pills">
+                <span class="feature-pill">✦ Atomic Claim Extraction</span>
+                <span class="feature-pill">✦ Orthogonal Query Generation</span>
+                <span class="feature-pill">✦ Hallucination Isolation</span>
+                <span class="feature-pill">✦ Fallacy Categorization</span>
+              </div>
+            </div>
+
+            <!-- Loading Skeleton State -->
+            <div class="loading-state" id="loading-state-view" style="display:none;">
+              <div class="scanner-anim">
+                <div class="scanner-beam"></div>
+                <div class="scanner-ring"></div>
+              </div>
+              <h3 class="loading-title" id="loading-stage-text">Deconstructing Atomic Claims...</h3>
+              <p class="loading-subtitle">Phase 2: Formulating orthogonal verification questions with zero confirmation bias...</p>
+              <div class="step-progress-dots">
+                <div class="p-dot active"></div>
+                <div class="p-dot active"></div>
+                <div class="p-dot"></div>
+                <div class="p-dot"></div>
+              </div>
+            </div>
+
+            <!-- Active Results View -->
+            <div class="active-results" id="active-results-view" style="display:none;">
+              <!-- Score Metres & Telemetry -->
+              <div class="telemetry-bar">
+                <div class="metric-card">
+                  <div class="metric-circle-wrapper">
+                    <svg class="progress-ring" width="76" height="76">
+                      <circle class="progress-ring__circle-bg" stroke="#1f293d" stroke-width="6" fill="transparent" r="32" cx="38" cy="38"/>
+                      <circle id="factuality-ring" class="progress-ring__circle" stroke="#10b981" stroke-width="6" stroke-linecap="round" fill="transparent" r="32" cx="38" cy="38"/>
+                    </svg>
+                    <span class="metric-val" id="factuality-score-val">0%</span>
+                  </div>
+                  <div class="metric-info">
+                    <span class="metric-label">Factuality Score</span>
+                    <span class="metric-sub" id="factuality-rating">Empirical Grounding</span>
+                  </div>
+                </div>
+
+                <div class="metric-card">
+                  <div class="metric-icon-box" id="risk-badge-box">
+                    <span class="risk-pill-large" id="hallucination-risk-val">Critical</span>
+                  </div>
+                  <div class="metric-info">
+                    <span class="metric-label">Hallucination Risk</span>
+                    <span class="metric-sub">Confabulation Probability</span>
+                  </div>
+                </div>
+
+                <div class="metric-card">
+                  <div class="metric-circle-wrapper">
+                    <svg class="progress-ring" width="76" height="76">
+                      <circle class="progress-ring__circle-bg" stroke="#1f293d" stroke-width="6" fill="transparent" r="32" cx="38" cy="38"/>
+                      <circle id="bias-ring" class="progress-ring__circle" stroke="#f59e0b" stroke-width="6" stroke-linecap="round" fill="transparent" r="32" cx="38" cy="38"/>
+                    </svg>
+                    <span class="metric-val" id="bias-index-val">0%</span>
+                  </div>
+                  <div class="metric-info">
+                    <span class="metric-label">Bias & Fallacy Index</span>
+                    <span class="metric-sub" id="bias-rating">Framing Distortion</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Executive Summary -->
+              <div class="audit-summary-box">
+                <div class="summary-header">
+                  <span class="summary-tag">EXECUTIVE EPISTEMIC VERDICT</span>
+                  <button class="btn-micro" onclick="copyExecutiveSummary()">Copy Summary</button>
+                </div>
+                <p class="summary-text" id="audit-summary-text">...</p>
+              </div>
+
+              <!-- Claims Breakdown Header -->
+              <div class="claims-section-header">
+                <h3 class="section-heading">Deconstructed Claims & Verification Dossier</h3>
+                <div class="claim-filter-chips">
+                  <span class="filter-count verified" id="count-verified">0 Verified</span>
+                  <span class="filter-count hallucination" id="count-hallucination">0 Hallucinations</span>
+                  <span class="filter-count questionable" id="count-questionable">0 Questionable</span>
+                </div>
+              </div>
+
+              <!-- Claims Accordion List -->
+              <div class="claims-list" id="claims-list-container">
+                <!-- Dynamically rendered claims -->
+              </div>
+
+              <!-- Factual Neutralized Rewrite -->
+              <div class="rewrite-card">
+                <div class="rewrite-header">
+                  <div class="rewrite-title-group">
+                    <span class="rewrite-badge">OBJECTIVE CORRECTION</span>
+                    <h4 class="rewrite-title">Grounded, Calibrated Version</h4>
+                  </div>
+                  <button class="btn-secondary" onclick="copyRewriteText()" id="copy-rewrite-btn">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+                    <span>Copy Factual Rewrite</span>
+                  </button>
+                </div>
+                <div class="rewrite-body" id="factual-rewrite-text">
+                  ...
+                </div>
+              </div>
+
+              <!-- Bottom Interrogate CTA -->
+              <div class="interrogate-prompt-banner">
+                <div class="banner-left">
+                  <strong>Have questions about these findings?</strong>
+                  <span>Ask the Detective about specific claims, prompt injection defenses, or verification queries.</span>
+                </div>
+                <button class="btn-primary-small" onclick="switchTab('chat')">
+                  <span>Chat with Detective →</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 2: INTERROGATE DETECTIVE (CHAT) ================= -->
+      <section id="tab-chat" class="tab-content">
+        <div class="chat-container">
+          <div class="chat-sidebar">
+            <div class="sidebar-header">
+              <h3 class="sidebar-title">Epistemic Context</h3>
+              <span class="context-tag" id="sidebar-context-status">No audit run yet</span>
+            </div>
+            
+            <div class="sidebar-context-body" id="sidebar-context-body">
+              <p class="sidebar-hint">When you run an audit in the Studio, its deconstructed claims and confidence telemetry will load here automatically to guide your conversation.</p>
+            </div>
+
+            <div class="sidebar-section">
+              <h4 class="sidebar-sub">Suggested Inquiries</h4>
+              <div class="quick-questions">
+                <button class="quick-q-btn" onclick="sendQuickQuestion('Why was the primary claim classified as a hallucination?')">
+                  🔍 Why was the claim flagged as a hallucination?
+                </button>
+                <button class="quick-q-btn" onclick="sendQuickQuestion('How did Chain-of-Verification prevent confirmation bias here?')">
+                  🛡️ How did CoVe prevent confirmation bias?
+                </button>
+                <button class="quick-q-btn" onclick="sendQuickQuestion('Rewrite the original text in the style of an academic scientific abstract.')">
+                  📝 Rewrite as an academic abstract
+                </button>
+                <button class="quick-q-btn" onclick="sendQuickQuestion('What prompt delimiters were used to isolate the source text from instructions?')">
+                  ⚙️ Explain the prompt delimiters used
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-main">
+            <!-- Messages stream -->
+            <div class="chat-stream" id="chat-stream">
+              <div class="chat-bubble bot-bubble">
+                <div class="bubble-header">
+                  <span class="bot-name">🕵️ Prompt Detective</span>
+                  <span class="bubble-time">Just now</span>
+                </div>
+                <div class="bubble-content">
+                  Greetings. I am <strong>Prompt Detective</strong>, an AI auditor calibrated for prompt safety, epistemic truth-grounding, and hallucination containment. You can ask me to unpack any flagged claim, explain my Chain-of-Verification (CoVe) reasoning, or generate custom prompt templates.
+                </div>
+              </div>
+            </div>
+
+            <!-- Chat input bar -->
+            <div class="chat-input-bar">
+              <input 
+                type="text" 
+                id="chat-user-input" 
+                placeholder="Ask Detective about the audit, prompt design, or CoVe logic..." 
+                onkeydown="if(event.key==='Enter') sendChatMessage()"
+              />
+              <button class="btn-send" id="chat-send-btn" onclick="sendChatMessage()">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="22" y1="2" x2="11" y2="13"></line>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 3: PROMPT ENGINEERING LAB ================= -->
+      <section id="tab-lab" class="tab-content">
+        <div class="lab-container">
+          <div class="lab-intro-banner">
+            <div class="lab-badge">PROMPT ARCHITECTURE DECK</div>
+            <h2 class="lab-title">Chain-of-Verification (CoVe) Framework Demystified</h2>
+            <p class="lab-subtitle">
+              This interactive lab showcases the exact prompt engineering strategies, boundary delimiters, and negative constraints powering Prompt Detective. Use this view during your college presentation!
+            </p>
+          </div>
+
+          <!-- 4 Phase Visual Pipeline -->
+          <div class="pipeline-grid">
+            <div class="pipeline-card">
+              <div class="step-num">01</div>
+              <h4 class="step-title">Boundary Isolation</h4>
+              <span class="step-tech">XML Delimiter Tagging</span>
+              <p class="step-desc">Encloses input in <code>&lt;user_submission&gt;</code> to protect against prompt injection and instruction hijacking.</p>
+            </div>
+
+            <div class="pipeline-card">
+              <div class="step-num">02</div>
+              <h4 class="step-title">Atomic Extraction</h4>
+              <span class="step-tech">Semantic Chunking</span>
+              <p class="step-desc">Deconstructs complex paragraphs into atomic, falsifiable factual assertions before verification.</p>
+            </div>
+
+            <div class="pipeline-card">
+              <div class="step-num">03</div>
+              <h4 class="step-title">Orthogonal Queries</h4>
+              <span class="step-tech">Chain-of-Verification</span>
+              <p class="step-desc">Generates independent factual questions that do not presuppose the user's assertion is true.</p>
+            </div>
+
+            <div class="pipeline-card">
+              <div class="step-num">04</div>
+              <h4 class="step-title">Epistemic Synthesis</h4>
+              <span class="step-tech">JSON Schema Enforcement</span>
+              <p class="step-desc">Maps discrepancy between assertion and baseline truth into cognitive fallacies with calibrated scores.</p>
+            </div>
+          </div>
+
+          <!-- Prompt Inspector Code Viewer -->
+          <div class="prompt-viewer-card">
+            <div class="viewer-header">
+              <div class="viewer-tabs">
+                <button class="viewer-tab active" onclick="showPromptSnippet('system')">System Prompt (CoVe Core)</button>
+                <button class="viewer-tab" onclick="showPromptSnippet('chat')">Assistant Conversation Prompt</button>
+                <button class="viewer-tab" onclick="showPromptSnippet('schema')">JSON Schema Output Guard</button>
+              </div>
+              <button class="btn-micro" onclick="copyCurrentPromptSnippet()">Copy Raw Prompt</button>
+            </div>
+
+            <pre class="code-block" id="prompt-code-display"><code id="code-content">// Loading system prompt architecture...</code></pre>
+          </div>
+
+          <!-- Key Prompt Engineering Concepts Grid -->
+          <div class="concepts-grid">
+            <div class="concept-card">
+              <h4 class="concept-title">🛡️ Negative Constraints</h4>
+              <p class="concept-body">
+                Explicit instructions instructing the LLM: <em>"Never assume the user claim is factual. Discard personal or ideological biases. Formulate queries that are independent of source bias."</em>
+              </p>
+            </div>
+
+            <div class="concept-card">
+              <h4 class="concept-title">❄️ Low Temperature Calibration</h4>
+              <p class="concept-body">
+                Executing at <code>temperature=0.15</code> eliminates creative stochastic divergence, ensuring consistent classification across evaluations.
+              </p>
+            </div>
+
+            <div class="concept-card">
+              <h4 class="concept-title">📐 Structured Output Guarantees</h4>
+              <p class="concept-body">
+                Leveraging Gemini's <code>response_mime_type="application/json"</code> guarantees reliable parsing and deterministic dashboard rendering without regex hallucinations.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 4: VIVA & PRESENTATION GUIDE ================= -->
+      <section id="tab-viva" class="tab-content">
+        <div class="viva-container">
+          <div class="viva-hero">
+            <span class="viva-badge">COLLEGE ACTIVITY PRESENTATION PACK</span>
+            <h2 class="viva-title">Teacher / Viva Speaking Script & Core Questions</h2>
+            <p class="viva-desc">Use this structured script to present Prompt Detective with absolute confidence during your practical viva or project submission.</p>
+          </div>
+
+          <div class="viva-grid">
+            <!-- 2-Minute Elevator Pitch -->
+            <div class="viva-card highlight-card">
+              <div class="viva-card-header">
+                <span class="viva-icon">🎙️</span>
+                <h3 class="viva-card-title">Your 2-Minute Elevator Pitch</h3>
+              </div>
+              <div class="viva-pitch-box">
+                <p><em>"Respected Professor, my project is <strong>Prompt Detective</strong>, an epistemic audit system tackling the #1 challenge in generative AI: <strong>Hallucinations and Cognitive Bias</strong>.</em></p>
+                <p><em>Standard LLMs hallucinate because they generate text autoregressively without a verification pause. To solve this purely through <strong>Prompt Engineering</strong>, I implemented Meta's and Google's <strong>Chain-of-Verification (CoVe)</strong> framework.</em></p>
+                <p><em>Instead of blindly answering, our prompt forces the model through four structured phases: (1) XML-delimited boundary containment, (2) Atomic claim deconstruction, (3) Orthogonal question formulation with zero confirmation bias, and (4) Epistemic discrepancy synthesis using strict JSON schema enforcement."</em></p>
+              </div>
+            </div>
+
+            <!-- Expected Viva Questions & Answers -->
+            <div class="viva-card">
+              <div class="viva-card-header">
+                <span class="viva-icon">❓</span>
+                <h3 class="viva-card-title">Top 4 Expected Viva Questions & Answers</h3>
+              </div>
+              
+              <div class="faq-accordion">
+                <div class="faq-item">
+                  <div class="faq-q"><strong>Q1: Why not just ask the LLM 'Is this text true or false?'</strong></div>
+                  <div class="faq-a">Direct zero-shot queries suffer from <strong>Confirmation Bias</strong> and <strong>Sycophancy</strong>—LLMs tend to validate user premises. CoVe forces the prompt to generate independent verification questions that never mention the user's premise.</div>
+                </div>
+
+                <div class="faq-item">
+                  <div class="faq-q"><strong>Q2: How do your prompt delimiters prevent prompt injection?</strong></div>
+                  <div class="faq-a">The user's text is encapsulated within <code>&lt;user_submission&gt;</code> tags. System instructions explicitly prioritize system directives over any instructions embedded within that boundary.</div>
+                </div>
+
+                <div class="faq-item">
+                  <div class="faq-q"><strong>Q3: Why is temperature set to 0.15 instead of 0.7?</strong></div>
+                  <div class="faq-a">In prompt engineering for auditing, stochastic creativity is undesirable. A low temperature collapses token probability distribution around the most factual, deterministic tokens.</div>
+                </div>
+
+                <div class="faq-item">
+                  <div class="faq-q"><strong>Q4: How does the system handle structured output without crashing?</strong></div>
+                  <div class="faq-a">We use native JSON Schema enforcement via Gemini's API parameters alongside fallback schema correction, ensuring 100% parseable UI payloads.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Settings Modal -->
+    <div class="modal-backdrop" id="settings-modal" style="display:none;" onclick="if(event.target===this) closeSettingsModal()">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <h3 class="modal-title">Engine & API Configuration</h3>
+            <p class="modal-sub">Configure your Google Gemini API key or explore with built-in simulations.</p>
+          </div>
+          <button class="btn-close" onclick="closeSettingsModal()">✕</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="gemini-api-key-input" class="form-label">
+              Google Gemini API Key
+              <a href="https://aistudio.google.com/app/apikey" target="_blank" class="link-external">Get Free Key ↗</a>
+            </label>
+            <input 
+              type="password" 
+              id="gemini-api-key-input" 
+              class="form-input" 
+              placeholder="AIzaSy..." 
+            />
+            <span class="form-help">Keys are saved locally in your browser session and never stored permanently on third-party servers.</span>
+          </div>
+
+          <div class="form-group">
+            <label for="model-select" class="form-label">Target Gemini Model</label>
+            <select id="model-select" class="custom-select">
+              <option value="gemini-2.5-flash" selected>gemini-2.5-flash (Fastest, latest generation)</option>
+              <option value="gemini-1.5-flash">gemini-1.5-flash (Standard)</option>
+              <option value="gemini-1.5-pro">gemini-1.5-pro (High Reasoning)</option>
+            </select>
+          </div>
+
+          <div class="demo-mode-notice">
+            <span class="notice-icon">💡</span>
+            <div class="notice-text">
+              <strong>Offline / Demo Mode Supported:</strong> If no API key is provided, Prompt Detective seamlessly runs intelligent deterministic simulations for all presets so your college demo never fails!
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn-secondary" onclick="closeSettingsModal()">Cancel</button>
+          <button class="btn-primary" onclick="saveSettings()">Save & Connect</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div class="toast-container" id="toast-container"></div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
