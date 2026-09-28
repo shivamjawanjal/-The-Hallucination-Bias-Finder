@@ -423,12 +423,20 @@ def chat_with_detective(req: ChatRequest):
             "reply": f"Detective response: I reviewed the audit report. Regarding your question '{last_user_msg}', our Chain-of-Verification protocol isolates every atomic claim and formulates independent verification queries. If you need any specific claim re-checked or re-worded for your college presentation, let me know!"
         }
 
-# Mount static files
-app.mount("/static", StaticFiles(directory="d:/chatbot/static"), name="static")
+# Base directories
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+STATIC_DIR = os.path.join(BASE_DIR, "static")
+
+# Mount static files if directory exists
+if os.path.exists(STATIC_DIR):
+    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 @app.get("/")
 def serve_index():
-    return FileResponse("d:/chatbot/static/index.html")
+    index_path = os.path.join(STATIC_DIR, "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+    return {"status": "online", "message": "Prompt Detective API is running."}
 
 if __name__ == "__main__":
     import uvicorn

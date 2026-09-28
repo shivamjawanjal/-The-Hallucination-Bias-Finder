@@ -62,7 +62,22 @@ http://127.0.0.1:8000
 
 ---
 
-## 🎓 4. Demonstration Presets for Your College Demo
+## ⚡ 4. Deploying to Vercel (1-Click Ready)
+
+The project is pre-configured for seamless deployment to **Vercel**:
+
+1. **Push your code to GitHub** (already configured on your repo).
+2. Go to **[vercel.com](https://vercel.com)** and log in with GitHub.
+3. Click **"Add New..."** -> **"Project"**.
+4. Select your repository: **`-The-Hallucination-Bias-Finder`**.
+5. *(Optional)* Under **Environment Variables**, add:
+   - `GEMINI_API_KEY`: *(Your Google Gemini API Key)*
+6. Click **Deploy**!
+   - Vercel will automatically build the serverless Python functions in `/api` and serve the glassmorphic frontend at your generated `.vercel.app` URL.
+
+---
+
+## 🎓 5. Demonstration Presets for Your College Demo
 
 Prompt Detective includes 4 instant presets in the UI:
 1. **🏛️ Historical Hallucination (AI Confabulation)**:
@@ -80,7 +95,7 @@ Prompt Detective includes 4 instant presets in the UI:
 
 ---
 
-## 🗣️ 5. Teacher / Viva Presentation Script (Cheat Sheet)
+## 🗣️ 6. Teacher / Viva Presentation Script (Cheat Sheet)
 
 When your professor asks you to present your project, follow this 3-step script:
 
@@ -98,16 +113,21 @@ When your professor asks you to present your project, follow this 3-step script:
 
 ---
 
-## 📁 6. Project Architecture
+## 📁 7. Project Architecture
 ```
 d:/chatbot/
+├── api/
+│   └── index.py        # Vercel serverless entrypoint for FastAPI
 ├── app.py              # FastAPI server, CoVe engine & Gemini API integration
 ├── prompts.py          # System prompts, CoVe instructions, and preset datasets
+├── vercel.json         # Vercel deployment routes and rewrites
 ├── requirements.txt    # Python dependencies (fastapi, uvicorn, google-genai)
 ├── .env.example        # Environment variables template
-├── README.md           # Documentation, Viva guide & script
+├── .gitignore          # Git exclusion rules
+├── README.md           # Documentation, Viva guide & Vercel deployment
 └── static/
     ├── index.html      # Glassmorphic UI with Studio, Chat, Lab & Viva tabs
     ├── style.css       # Custom modern dark-mode styles & micro-animations
     └── app.js          # Interactive frontend logic, telemetry rings & chat client
 ```
+
